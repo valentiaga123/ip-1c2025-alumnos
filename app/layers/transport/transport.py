@@ -9,7 +9,6 @@ def getAllImages():
     json_collection = []
     for id in range(1, 30):
         response = requests.get(config.STUDENTS_REST_API_URL + str(id))
-
         # si la búsqueda no arroja resultados, entonces retornamos una lista vacía de elementos.    
         if not response.ok:
             print(f"[transport.py]: error al obtener datos para el id {id}")

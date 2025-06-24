@@ -1,45 +1,144 @@
 <!DOCTYPE html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POKEDEX - IP</title>
-    {% load bootstrap5 %} {% bootstrap_css %} {% bootstrap_javascript %} {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
 
-<body>
+    {% load bootstrap5 %} {% load static %} {% bootstrap_css %} {% bootstrap_javascript %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <style>
+      #spinner-overlay {
+        position: fixed; /* Fija el overlay en la ventana de visualización */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* Asegura que esté por encima de todo lo demás */
+      }
+
+      .spinner {
+        border: 8px solid #f3f3f3; /* Color de fondo del spinner */
+        border-top: 8px solid #3498db; /* Color del borde superior (el que gira) */
+        border-radius: 50%; /* Hace que la forma sea circular */
+        width: 60px; /* Ancho del spinner */
+        height: 60px; /* Alto del spinner */
+        animation: spin 2s linear infinite; /* Aplica la animación 'spin' durante 2s, de forma lineal e infinita */
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        } /* Estado inicial de la rotación */
+        100% {
+          transform: rotate(360deg);
+        } /* Estado final de la rotación (una vuelta completa) */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="spinner-overlay" style="display: none">
+      <div class="spinner"></div>
+    </div>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Proyecto TP</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'index-page' %}">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'home' %}"><strong>Galería</strong></a>
-                    </li>
-                    {% if request.user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'favoritos' %}">Favoritos</a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        {% if request.user.is_authenticated %}
-                        <a class="nav-link" href="{% url 'exit' %}">Salir</a> {% else %}
-                        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a> {% endif %}
-                    </li>
-                </ul>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Proyecto TP</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                href="{% url 'index-page' %}"
+                >Inicio</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                aria-current="page"
+                href="{% url 'home' %}"
+                ><strong>Galería</strong></a
+              >
+            </li>
 
 
-            </div>
+            {% if request.user.is_authenticated %}
+              <li class="nav-item">
+                <span class="nav-link disabled">Hola, {{ request.user.username|capfirst }}</span>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'exit' %}">Cerrar sesión</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
+              </li>
+            {% endif %}
+          </ul>
         </div>
+      </div>
     </nav>
 
     {% block content %} {% endblock %} {% include "footer.html" %}
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const spinnerOverlay = document.getElementById("spinner-overlay");
+
+        // Función para mostrar el spinner cambiando su estilo de display a 'flex'
+        function showSpinner() {
+          spinnerOverlay.style.display = "flex";
+        }
+
+        // Función para ocultar el spinner cambiando su estilo de display a 'none'
+        function hideSpinner() {
+          spinnerOverlay.style.display = "none";
+        }
+
+        // 1. Muestra el spinner tan pronto como el DOM esté disponible para indicar la carga inicial
+        showSpinner();
+
+        // 2. Oculta el spinner una vez que toda la página (imágenes, scripts externos, etc.) ha terminado de cargar
+        window.addEventListener("load", function () {
+          hideSpinner();
+        });
+
+        // 3. Opcional: Muestra el spinner de nuevo al enviar cualquier formulario.
+        // Esto es útil porque el envío de un formulario recargará la página o redirigirá,
+        // y el spinner se mostrará hasta que la nueva página se cargue completamente.
+        const forms = document.querySelectorAll("form");
+        forms.forEach((form) => {
+          form.addEventListener("submit", function () {
+            showSpinner();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

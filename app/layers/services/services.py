@@ -1,67 +1,57 @@
 # capa de servicio/lógica de negocio
-
 from ..transport import transport
 from ...config import config
-from ..persistence import repositories
 from ..utilities import translator
-from django.contrib.auth import get_user
+
+
 
 # función que devuelve un listado de cards. Cada card representa una imagen de la API de Pokemon
 def getAllImages():
-    # debe ejecutar los siguientes pasos:
-    # 1) traer un listado de imágenes crudas desde la API (ver transport.py)
-    # 2) convertir cada img. en una card.
-    # 3) añadirlas a un nuevo listado que, finalmente, se retornará con todas las card encontradas.
-    pass
+    raw_pokemon_data = transport.getAllImages()
+    pokemon_cards = []  # Crea una lista vacía para almacenar las Card
+
+    for pokemon_raw_data in raw_pokemon_data:  # Itera sobre cada Pokémon crudo
+        try:
+            # Convierte cada diccionario de datos crudos en un objeto Card
+            card = translator.fromRequestIntoCard(pokemon_raw_data)
+            pokemon_cards.append(card)  # Añade la Card a la lista
+        except Exception as e:
+            # Esto ayuda a depurar si hay un problema con un Pokémon específico
+            print(
+                f"[service.py]: Error al traducir Pokémon {pokemon_raw_data.get('name', 'desconocido')}: {e}")
+            continue  # Continúa con el siguiente Pokémon si este falla
+
+    return pokemon_cards  # Retorna la lista de Cards
 
 # función que filtra según el nombre del pokemon.
 def filterByCharacter(name):
     filtered_cards = []
-
-    for card in getAllImages():
-        # debe verificar si el name está contenido en el nombre de la card, antes de agregarlo al listado de filtered_cards.
-        filtered_cards.append(card)
+    # Obtiene todas las imágenes/cards disponibles
+    all_images = getAllImages()
+    
+    for card in all_images:
+        # Verifica si el 'name' buscado (convertido a minúsculas) está contenido
+        # en el nombre del Pokémon de la Card (también en minúsculas).
+        if name.lower() in card.name.lower():
+            filtered_cards.append(card)
 
     return filtered_cards
 
 # función que filtra las cards según su tipo.
 def filterByType(type_filter):
     filtered_cards = []
+    # Obtiene todas las imágenes/cards disponibles
+    all_images = getAllImages()
 
-    for card in getAllImages():
-        # debe verificar si la casa de la card coincide con la recibida por parámetro. Si es así, se añade al listado de filtered_cards.
-        filtered_cards.append(card)
+    for card in all_images:
+        # Verifica si alguno de los tipos de la Card coincide con el tipo_filter
+        # Se usa any() para comprobar si el tipo_filter (en minúsculas)
+        # es igual a alguno de los tipos del Pokémon (también en minúsculas).
+        if any(pokemon_type.lower() == type_filter.lower() for pokemon_type in card.types):
+            filtered_cards.append(card)
 
     return filtered_cards
 
-# añadir favoritos (usado desde el template 'home.html')
-def saveFavourite(request):
-    fav = '' # transformamos un request en una Card (ver translator.py)
-    fav.user = get_user(request) # le asignamos el usuario correspondiente.
-
-    return repositories.save_favourite(fav) # lo guardamos en la BD.
-
-# usados desde el template 'favourites.html'
-def getAllFavourites(request):
-    if not request.user.is_authenticated:
-        return []
-    else:
-        user = get_user(request)
-
-        favourite_list = [] # buscamos desde el repositories.py TODOS Los favoritos del usuario (variable 'user').
-        mapped_favourites = []
-
-        for favourite in favourite_list:
-            card = '' # convertimos cada favorito en una Card, y lo almacenamos en el listado de mapped_favourites que luego se retorna.
-            mapped_favourites.append(card)
-
-        return mapped_favourites
-
-def deleteFavourite(request):
-    favId = request.POST.get('id')
-    return repositories.delete_favourite(favId) # borramos un favorito por su ID
-
-#obtenemos de TYPE_ID_MAP el id correspondiente a un tipo segun su nombre
 def get_type_icon_url_by_name(type_name):
     type_id = config.TYPE_ID_MAP.get(type_name.lower())
     if not type_id:

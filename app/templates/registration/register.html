@@ -1,0 +1,37 @@
+{% extends 'header.html' %}
+{# Esto significa que todo el contenido definido en 'header.html' (como la cabecera, navegación, etc.)#} 
+{# será incluido automáticamente aquí, y nosotros solo añadiremos el contenido específico de esta página.#}
+
+{% block content %}
+<div class="register-form" style="text-align: center;">
+    <form method="POST" style="display: inline-block; text-align: left; max-width: 400px; margin: auto;">
+        {% csrf_token %}
+        <h2 class="text-center">Registrarse</h2> 
+
+        {% if formulario.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field in formulario %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in formulario.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {{ formulario.as_p }}
+
+        <div class="form-group" style="text-align: center;">
+            <button type="submit" class="btn btn-success">Crear cuenta</button>
+        </div>
+
+        <div class="mt-3 text-center">
+            <small>¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá sesión acá</a></small>
+        </div>
+    </form>
+</div>
+{% endblock %}

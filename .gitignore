@@ -1,0 +1,19 @@
+# Archivos de caché de Python
+_pycache_/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de entorno virtual de Python (si usas venv)
+venv/
+env/
+
+# Archivos de base de datos SQLite (si tu proyecto usa uno)
+*.sqlite3
+
+# Archivos temporales de editores o del sistema operativo
+*.swp  # Archivos de intercambio de Vim
+*.swo  # Archivos de Vim
+.DS_Store # Archivos de macOS
+Thumbs.db # Archivos de Windows
+.vscode/ # Configuración de Visual Studio Code (opcional, pero común ignorar)
